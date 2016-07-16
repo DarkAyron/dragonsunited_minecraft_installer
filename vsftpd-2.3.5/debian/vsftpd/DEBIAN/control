@@ -1,0 +1,19 @@
+Package: vsftpd
+Version: 2.3.5-3
+Architecture: amd64
+Maintainer: Daniel Baumann <daniel.baumann@progress-technologies.net>
+Installed-Size: 270
+Depends: debconf (>= 0.5) | debconf-2.0, libc6 (>= 2.7), libcap2 (>= 2.10), libpam0g (>= 0.99.7.1), libssl1.0.0 (>= 1.0.0), libwrap0 (>= 7.6-4~), adduser, libpam-modules, netbase
+Recommends: logrotate
+Conflicts: ftp-server
+Replaces: ftp-server
+Provides: ftp-server
+Section: net
+Priority: extra
+Homepage: http://vsftpd.beasts.org/
+Description: lightweight, efficient FTP server written for security
+ This package provides the "Very Secure FTP Daemon", written from
+ the ground up with security in mind.
+ .
+ It supports both anonymous and non-anonymous FTP access, PAM authentication,
+ bandwidth limiting, and the Linux sendfile() facility.

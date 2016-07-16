@@ -1,0 +1,5 @@
+/etc/init.d/vsftpd
+/etc/vsftpd.conf
+/etc/ftpusers
+/etc/pam.d/vsftpd
+/etc/logrotate.d/vsftpd

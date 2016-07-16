@@ -1,0 +1,358 @@
+Author: Dark Ayron <ayron@shadowdrake.fur>
+Description: Minecraft updater extension
+
+--- vsftpd-2.3.5.orig/filestr.h
++++ vsftpd-2.3.5/filestr.h
+@@ -15,9 +15,9 @@ struct mystr;
+  *                be truncated.
+  * RETURNS
+  * An integer representing the success/failure of opening the file
+- * "p_filename". Zero indicates success. If successful, the file is read into
+- * the "p_str" string object. If not successful, "p_str" will point to an
+- * empty buffer.
++ * "p_filename". Positive indicates success. If successful, the file is read into
++ * the "p_str" string object and the size is returned. If not successful, "p_str"
++ * will point to an empty buffer and a negative number is returned.
+  */
+ int str_fileread(struct mystr* p_str, const char* p_filename,
+                  unsigned int maxsize);
+--- /dev/null
++++ vsftpd-2.3.5/mcupdate.c
+@@ -0,0 +1,112 @@
++/*
++ * Part of Very Secure FTPd
++ * Licence: GPL v2
++ * Author: Dark Ayron
++ * mcupdate.c
++ *
++ * Routines for generating update instructions.
++ * This is the minecraft updater addon.
++ */
++
++#include "tunables.h"
++#include "str.h"
++#include "filestr.h"
++#include "defs.h"
++#include "sysutil.h"
++#include "utility.h"
++#include "ftpcmdio.h"
++
++int
++mcu_get_latest_version(const struct mystr* modpack, struct mystr* version)
++{
++  struct mystr filename = INIT_MYSTR;
++  int result;
++  str_alloc_text(&filename, "/DATA/VERSION/");
++  str_append_str(&filename, modpack);
++
++  result = str_fileread(version, str_getbuf(&filename), 40);
++  str_free(&filename);
++  return (result >= 0);
++}
++
++int
++mcu_create_update_instructions(struct mystr* instr, const struct mystr* modpack, const struct mystr* version)
++{
++  struct mystr filename1 = INIT_MYSTR;
++  struct mystr filename2 = INIT_MYSTR;
++  struct mystr list1 = INIT_MYSTR;
++  struct mystr list2 = INIT_MYSTR;
++  struct mystr file = INIT_MYSTR;
++  struct mystr version_latest = INIT_MYSTR;
++  int result;
++  unsigned int pos;
++  
++  result = mcu_get_latest_version(modpack, &version_latest);
++  if (!result)
++  {
++    return 1;
++  }
++  str_trunc(&version_latest, str_getlen(&version_latest) - 1);
++  
++  str_alloc_text(&filename1, "/DATA/LISTFILE/");
++  str_append_str(&filename1, modpack);
++  str_append_text(&filename1, "/");
++  str_append_str(&filename1, version);
++  result = str_fileread(&list1, str_getbuf(&filename1), 10000);
++  if (result < 0)
++  {
++    return 2;
++  }
++  
++  str_alloc_text(&filename2, "/DATA/LISTFILE/");
++  str_append_str(&filename2, modpack);
++  str_append_text(&filename2, "/");
++  str_append_str(&filename2, &version_latest);
++  result = str_fileread(&list2, str_getbuf(&filename2), 10000);
++  if (result < 0)
++  {
++    return -1;
++  }
++  
++  str_empty(instr);
++  pos = 0;
++  do
++  {
++    result = str_getline(&list1, &file, &pos);
++    if (str_equal_text(&file, ".") || str_isempty(&file) || str_contains_line(&list2, &file))
++    {
++      continue;
++    }
++    else
++    {
++      str_replace_text(&file, "./", "-");
++      str_append_char(&file, '\n');
++      str_append_str(instr, &file);
++    }
++  } while(result);
++  
++  pos = 0;
++  do
++  {
++    result = str_getline(&list2, &file, &pos);
++    if (str_equal_text(&file, ".") || str_isempty(&file) || str_contains_line(&list1, &file))
++    {
++      continue;
++    }
++    else
++    {
++      str_replace_text(&file, "./", "+");
++      str_append_char(&file, '\n');
++      str_append_str(instr, &file);
++    }
++  } while(result);
++  
++  str_free(&filename1);
++  str_free(&filename2);
++  str_free(&list1);
++  str_free(&list2);
++  str_free(&file);
++  str_free(&version_latest);
++  
++  return 0;  
++}
+--- vsftpd-2.3.5.orig/logging.h
++++ vsftpd-2.3.5/logging.h
+@@ -20,6 +20,7 @@ enum EVSFLogEntryType
+   kVSFLogEntryRmdir,
+   kVSFLogEntryChmod,
+   kVSFLogEntryDebug,
++  kVSFLogEntryUpdate,
+ };
+ 
+ /* vsf_log_init()
+--- /dev/null
++++ vsftpd-2.3.5/mcupdate.h
+@@ -0,0 +1,20 @@
++#ifndef VSF_MCUPDATE_H
++#define VSF_MCUPDATE_H
++
++/* mcu_get_latest_version()
++ * PURPOSE
++ * Get the latest version of a specified modpack.
++ *
++ * PARAMETERS
++ * modpack      - the modpack for wich version info is requested
++ * version      - the version string
++ *
++ * RETURNS
++ * An integer representing the success/failure of opening the version file.
++ * Nonzero indicates success.
++ */
++int mcu_get_latest_version(const struct mystr* modpack, struct mystr* version);
++
++
++int mcu_create_update_instructions(struct mystr* instr, const struct mystr* modpack, const struct mystr* version);
++#endif /* VSF_MCUPDATE_H */
+--- vsftpd-2.3.5.orig/ftpcodes.h
++++ vsftpd-2.3.5/ftpcodes.h
+@@ -24,6 +24,7 @@
+ #define FTP_SITEHELP          214
+ #define FTP_HELP              214
+ #define FTP_SYSTOK            215
++#define FTP_VERSOK            216
+ #define FTP_GREET             220
+ #define FTP_GOODBYE           221
+ #define FTP_ABOR_NOCONN       225
+--- vsftpd-2.3.5.orig/postlogin.c
++++ vsftpd-2.3.5/postlogin.c
+@@ -27,6 +27,8 @@
+ #include "ssl.h"
+ #include "vsftpver.h"
+ #include "opts.h"
++#include "mcupdate.h"
++#include "readwrite.h"
+ 
+ /* Private local functions */
+ static void handle_pwd(struct vsf_session* p_sess);
+@@ -53,6 +55,10 @@ static void handle_site_chmod(struct vsf
+                               struct mystr* p_arg_str);
+ static void handle_site_umask(struct vsf_session* p_sess,
+                               struct mystr* p_arg_str);
++static void handle_site_vers(struct vsf_session* p_sess,
++                              struct mystr* p_arg_str);
++static void handle_site_uins(struct vsf_session* p_sess,
++                              struct mystr* p_arg_str);
+ static void handle_eprt(struct vsf_session* p_sess);
+ static void handle_help(struct vsf_session* p_sess);
+ static void handle_stou(struct vsf_session* p_sess);
+@@ -978,7 +984,7 @@ handle_port(struct vsf_session* p_sess)
+     }
+   }
+   vsf_cmdio_write(p_sess, FTP_PORTOK,
+-                  "PORT command successful. Consider using PASV.");
++                  "PORT command successful.");
+ }
+ 
+ static void
+@@ -1483,16 +1489,24 @@ handle_site(struct vsf_session* p_sess)
+   {
+     handle_site_umask(p_sess, &s_site_args_str);
+   }
++  else if (str_equal_text(&p_sess->ftp_arg_str, "VERS"))
++  {
++    handle_site_vers(p_sess, &s_site_args_str);
++  }
++  else if (str_equal_text(&p_sess->ftp_arg_str, "UINS"))
++  {
++    handle_site_uins(p_sess, &s_site_args_str);
++  }
+   else if (str_equal_text(&p_sess->ftp_arg_str, "HELP"))
+   {
+     if (tunable_write_enable &&
+         tunable_chmod_enable)
+     {
+-      vsf_cmdio_write(p_sess, FTP_SITEHELP, "CHMOD UMASK HELP");
++      vsf_cmdio_write(p_sess, FTP_SITEHELP, "CHMOD UMASK VERS UINS HELP");
+     }
+     else
+     {
+-      vsf_cmdio_write(p_sess, FTP_SITEHELP, "UMASK HELP");
++      vsf_cmdio_write(p_sess, FTP_SITEHELP, "UMASK VERS UINS HELP");
+     }
+   }
+   else
+@@ -1567,6 +1581,100 @@ handle_site_umask(struct vsf_session* p_
+ }
+ 
+ static void
++handle_site_vers(struct vsf_session* p_sess, struct mystr* p_arg_str)
++{
++  int retval;
++  struct str_locate_result result;
++  static struct mystr version;
++  if (str_isempty(p_arg_str))
++  {
++    vsf_cmdio_write(p_sess, FTP_BADCMD, "Which modpack?");
++    return;
++  }
++  result = str_locate_char(p_arg_str, '/');
++  if (result.found)
++  {
++    vsf_cmdio_write(p_sess, FTP_BADCMD, "Illegal character.");
++    return;
++  }
++
++  retval = mcu_get_latest_version(p_arg_str, &version);
++  if (!retval)
++  {
++    vsf_cmdio_write(p_sess, FTP_FILEFAIL, "Modpack not found.");
++    return;
++  }
++  vsf_cmdio_write(p_sess, FTP_VERSOK, str_getbuf(&version));
++}
++
++static void
++handle_site_uins(struct vsf_session* p_sess, struct mystr* p_arg_str)
++{
++  static struct mystr version;
++  static struct mystr instructions;
++  struct str_locate_result result;
++  int retval;
++  int trans_ret;
++  int remote_fd;
++  if (str_isempty(p_arg_str))
++  {
++    vsf_cmdio_write(p_sess, FTP_BADCMD, "SITE UINS needs 2 arguments.");
++    return;
++  }
++  result = str_locate_char(p_arg_str, '/');
++  if (result.found)
++  {
++    vsf_cmdio_write(p_sess, FTP_BADCMD, "Illegal character.");
++    return;
++  }
++  str_split_char(p_arg_str, &version, ' ');
++  if (str_isempty(&version))
++  {
++    vsf_cmdio_write(p_sess, FTP_BADCMD, "SITE UINS needs 2 arguments.");
++    return;
++  }
++  if (!data_transfer_checks_ok(p_sess))
++  {
++    return;
++  }
++  
++  vsf_log_start_entry(p_sess, kVSFLogEntryUpdate);
++  str_alloc_text(&p_sess->log_str, "Modpack: ");
++  str_append_str(&p_sess->log_str, p_arg_str);
++  str_append_text(&p_sess->log_str, ", Version: ");
++  str_append_str(&p_sess->log_str, &version);
++  retval = mcu_create_update_instructions(&instructions, p_arg_str, &version);
++  switch (retval)
++  {
++    case 1:
++      vsf_log_do_log(p_sess, 0);
++      vsf_cmdio_write(p_sess, FTP_FILEFAIL, "Modpack not found.");
++      return;
++    case 2:
++      vsf_log_do_log(p_sess, 0);
++      vsf_cmdio_write(p_sess, FTP_FILEFAIL, "Version not found.");
++      return;
++    case -1:
++      vsf_log_do_log(p_sess, 0);
++      vsf_cmdio_write(p_sess, FTP_FILEFAIL, "Listfile error.");
++      return;
++  }
++  
++  remote_fd = get_remote_transfer_fd(p_sess, "Here comes the update instructions.");
++  trans_ret = ftp_write_str(p_sess, &instructions, kVSFRWData);
++  if (vsf_ftpdataio_dispose_transfer_fd(p_sess) != 1 && trans_ret < 0)
++  {
++    vsf_log_do_log(p_sess, 0);
++    vsf_cmdio_write(p_sess, FTP_BADSENDNET, "Failure writing network stream.");
++  }
++  else
++  {
++    vsf_log_do_log(p_sess, 1);
++    vsf_cmdio_write(p_sess, FTP_TRANSFEROK, "Instructions send OK.");
++  }
++}
++
++static void
+ handle_appe(struct vsf_session* p_sess)
+ {
+   handle_upload_common(p_sess, 1, 0);
+--- vsftpd-2.3.5.orig/logging.c
++++ vsftpd-2.3.5/logging.c
+@@ -324,6 +324,9 @@ vsf_log_do_log_vsftpd_format(struct vsf_
+     case kVSFLogEntryDebug:
+       str_append_text(p_str, "DEBUG");
+       break;
++    case kVSFLogEntryUpdate:
++      str_append_text(p_str, "UPDATE");
++      break;
+     case kVSFLogEntryNull:
+       /* Fall through */
+     default:
+--- vsftpd-2.3.5.orig/Makefile
++++ vsftpd-2.3.5/Makefile
+@@ -14,7 +14,7 @@ OBJS	=	main.o utility.o prelogin.o ftpcm
+     banner.o filestr.o parseconf.o secutil.o \
+     ascii.o oneprocess.o twoprocess.o privops.o standalone.o hash.o \
+     tcpwrap.o ipaddrparse.o access.o features.o readwrite.o opts.o \
+-    ssl.o sslslave.o ptracesandbox.o ftppolicy.o sysutil.o sysdeputil.o
++    ssl.o sslslave.o ptracesandbox.o ftppolicy.o sysutil.o sysdeputil.o mcupdate.o
+ 
+ 
+ .c.o:

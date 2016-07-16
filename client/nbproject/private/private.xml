@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="23">
+        <file>
+            <url>src/fur/shadowdrake/minecraft/InstallPanel.java</url>
+            <bookmark id="23">
+                <name/>
+                <line>384</line>
+                <key/>
+            </bookmark>
+            <bookmark id="14">
+                <name/>
+                <line>705</line>
+                <key/>
+            </bookmark>
+            <bookmark id="16">
+                <name/>
+                <line>1134</line>
+                <key/>
+            </bookmark>
+            <bookmark id="22">
+                <name/>
+                <line>1612</line>
+                <key/>
+            </bookmark>
+        </file>
+        <file>
+            <url>src/fur/shadowdrake/minecraft/InstallerWindow.java</url>
+            <bookmark id="20">
+                <name/>
+                <line>154</line>
+                <key/>
+            </bookmark>
+            <bookmark id="8">
+                <name/>
+                <line>390</line>
+                <key/>
+            </bookmark>
+        </file>
+    </editor-bookmarks>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/ProxyAddress.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/AddonsPanel.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/bootloader/JavaConsole.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/InstallerWindow.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/FtpCommandChannelReader.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/Configuration.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/InstallPanel.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/json/InstalledPacks.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/PostDownload.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/json/Addon.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/AboutBox.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/FtpClient.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/ReadmeBox.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/LogOutput.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/ConfigPanel.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/json/Pack.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/json/Manifest.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/Test.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/PathComparator.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/json/LauncherProfiles.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/json/PackDescription.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/bootloader/InitialConfig.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/bootloader/Bootloader.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/NetworkException.java</file>
+            <file>file:/lair/ayron/NetBeansProjects/Minecraft_DU/src/fur/shadowdrake/minecraft/json/AddonManifest.java</file>
+        </group>
+    </open-files>
+</project-private>

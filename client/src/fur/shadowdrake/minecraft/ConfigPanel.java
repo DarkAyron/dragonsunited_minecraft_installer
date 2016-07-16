@@ -1,0 +1,361 @@
+/*
+ * Copyright (C) 2016 ayron
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package fur.shadowdrake.minecraft;
+
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.net.PasswordAuthentication;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
+/**
+ *
+ * @author ayron
+ */
+public class ConfigPanel extends javax.swing.JPanel {
+
+    private File installDir;
+    private PasswordAuthentication httpProxyCredentials;
+    private PasswordAuthentication ftpProxyCredentials;
+    private ActionListener lafChangeListener;
+    private final Configuration config;
+
+    /**
+     * Creates new form ConfigPanel
+     *
+     * @param config
+     */
+    public ConfigPanel(Configuration config) {
+        initComponents();
+        this.config = config;
+        this.installDir = config.getInstallDir();
+        this.dirBox.setText(installDir.getAbsolutePath());
+        this.httpProxy.setText(config.getHttpProxy());
+        this.ftpProxy.setText(config.getFtpProxy());
+        this.ftpProxyMode.setSelectedIndex(config.getFtpProxyMode());
+        this.httpProxyCredentials = config.getHttpProxyCredentials();
+        this.ftpProxyCredentials = config.getFtpProxyCredentials();
+        this.httpForFtp.setSelected(config.isHttpForFtp());
+        httpForFtpActionPerformed(null);
+        this.laf.setSelectedItem(config.getLaf());
+    }
+
+    public boolean commit() {
+        /* quick check */
+        ProxyAddress addr;
+
+        installDir = new File(dirBox.getText());
+        if (!installDir.exists() && !installDir.mkdirs()) {
+            JOptionPane.showMessageDialog(this, "Can't create install directory.");
+            return false;
+        }
+
+        try {
+            if (!httpProxy.getText().isEmpty()) {
+                addr = new ProxyAddress(httpProxy.getText(), 3128);
+            }
+            if (!ftpProxy.getText().isEmpty()) {
+                addr = new ProxyAddress(ftpProxy.getText(), 2121);
+            }
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(this, "Proxy must be in format \"host:port\"\nEg. rayquaza.yiff-me.eu:3128 or 192.168.0.1:3128\nWhen the port is omitted, the default port is used.");
+            return false;
+        }
+
+        config.setInstallDir(installDir);
+        config.setHttpProxy(httpProxy.getText());
+        config.setHttpProxyCredentials(httpProxyCredentials);
+        config.setFtpProxy(ftpProxy.getText());
+        config.setHttpForFtp(httpForFtp.isSelected());
+        config.setLaf((String) laf.getSelectedItem());
+        return true;
+    }
+
+    public void revert() {
+        this.installDir = config.getInstallDir();
+        this.dirBox.setText(installDir.getAbsolutePath());
+        this.httpProxy.setText(config.getHttpProxy());
+        this.ftpProxy.setText(config.getFtpProxy());
+        this.ftpProxyMode.setSelectedIndex(config.getFtpProxyMode());
+        this.httpProxyCredentials = config.getHttpProxyCredentials();
+        this.ftpProxyCredentials = config.getFtpProxyCredentials();
+        this.httpForFtp.setSelected(config.isHttpForFtp());
+        httpForFtpActionPerformed(null);
+        this.laf.setSelectedItem(config.getLaf());
+    }
+
+    public void setLafChangeListener(ActionListener lafChangeListener) {
+        this.lafChangeListener = lafChangeListener;
+    }
+
+    public File getInstallDir() {
+        return installDir;
+    }
+
+    public String getHttpProxy() {
+        return httpProxy.getText();
+    }
+
+    public String getFtpProxy() {
+        return ftpProxy.getText();
+    }
+
+    public PasswordAuthentication getHttpProxyCredentials() {
+        return httpProxyCredentials;
+    }
+
+    public PasswordAuthentication getFtpProxyCredentials() {
+        return ftpProxyCredentials;
+    }
+
+    public int getFtpProxyMode() {
+        return ftpProxyMode.getSelectedIndex();
+    }
+
+    public String getLaf() {
+        return (String) laf.getSelectedItem();
+    }
+
+    public boolean isHttpForFtp() {
+        return httpForFtp.isSelected();
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        httpProxy = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        ftpProxy = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        ftpProxyMode = new javax.swing.JComboBox<>();
+        dirBrowse = new javax.swing.JButton();
+        httpLogin = new javax.swing.JButton();
+        ftpLogin = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        dirBox = new javax.swing.JTextField();
+        laf = new javax.swing.JComboBox<>();
+        jLabel2 = new javax.swing.JLabel();
+        httpForFtp = new javax.swing.JCheckBox();
+
+        httpProxy.setToolTipText("Empty means direct. Port defaults to 3128.");
+        httpProxy.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                httpProxyKeyPressed(evt);
+            }
+        });
+
+        jLabel3.setText("ftp proxy");
+
+        ftpProxy.setToolTipText("Empty means direct. Port defaults to 2121.");
+        ftpProxy.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                ftpProxyKeyPressed(evt);
+            }
+        });
+
+        jLabel4.setText("ftp proxy mode");
+
+        ftpProxyMode.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "user@host", "SITE host", "OPEN host" }));
+        ftpProxyMode.setToolTipText("choose user@host if you use ftp.proxy");
+
+        dirBrowse.setText("Browse");
+        dirBrowse.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dirBrowseActionPerformed(evt);
+            }
+        });
+
+        httpLogin.setText("Login");
+        httpLogin.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                httpLoginActionPerformed(evt);
+            }
+        });
+
+        ftpLogin.setText("Login");
+        ftpLogin.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ftpLoginActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText("Install directory");
+
+        jLabel5.setText("Design");
+
+        dirBox.setToolTipText("Will be created if not existent.");
+
+        laf.setModel(new LafList());
+        laf.setToolTipText("If you want the default design, select Metal. (Nimbus on Solaris)");
+        laf.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                lafActionPerformed(evt);
+            }
+        });
+
+        jLabel2.setText("http proxy");
+
+        httpForFtp.setText("use http proxy for ftp");
+        httpForFtp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                httpForFtpActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel4)
+                    .addComponent(jLabel5))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(httpForFtp)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(laf, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(dirBox, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
+                            .addComponent(httpProxy, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(ftpProxy, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(ftpProxyMode, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(dirBrowse, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(httpLogin, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(ftpLogin, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(dirBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(dirBrowse))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(httpProxy, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(httpLogin))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(ftpProxy, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ftpLogin))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(ftpProxyMode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(httpForFtp)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(laf, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel5))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void httpProxyKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_httpProxyKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_F1) {
+            JOptionPane.showMessageDialog(this, "Proxy must be in format \"host[:port]\"\nEg. kyogre.yiff-me.eu:3128 or 192.168.0.1:3128\nWhen the port is omitted, the default port (3128) is used.");
+        }
+    }//GEN-LAST:event_httpProxyKeyPressed
+
+    private void ftpProxyKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_ftpProxyKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_F1) {
+            JOptionPane.showMessageDialog(this, "Proxy must be in format \"host[:port]\"\nEg. groudon.yiff-me.eu:2121 or 192.168.0.2:2121\nWhen the port is omitted, the default port (2121) is used.");
+        }
+    }//GEN-LAST:event_ftpProxyKeyPressed
+
+    private void dirBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dirBrowseActionPerformed
+        JFileChooser fc = new JFileChooser(new File(dirBox.getText()));
+
+        fc.setFileHidingEnabled(false);
+        fc.setDialogTitle("Select directory");
+        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            dirBox.setText(fc.getSelectedFile().toString());
+
+        }
+    }//GEN-LAST:event_dirBrowseActionPerformed
+
+    private void httpLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_httpLoginActionPerformed
+        CredentialDialog credentials = new CredentialDialog(new JFrame(), true, httpProxyCredentials, "http proxy credentials");
+        credentials.setVisible(true);
+        if (credentials.getReturnStatus()) {
+            httpProxyCredentials = credentials.getAuthentication();
+        }
+        credentials.dispose();
+    }//GEN-LAST:event_httpLoginActionPerformed
+
+    private void ftpLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ftpLoginActionPerformed
+        CredentialDialog credentials = new CredentialDialog(new JFrame(), true, ftpProxyCredentials, "ftp proxy credentials");
+        credentials.setVisible(true);
+        if (credentials.getReturnStatus()) {
+            ftpProxyCredentials = credentials.getAuthentication();
+        }
+        credentials.dispose();
+    }//GEN-LAST:event_ftpLoginActionPerformed
+
+    private void lafActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lafActionPerformed
+        if (lafChangeListener != null) {
+            lafChangeListener.actionPerformed(evt);
+        }
+    }//GEN-LAST:event_lafActionPerformed
+
+    private void httpForFtpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_httpForFtpActionPerformed
+        ftpProxy.setEnabled(!httpForFtp.isSelected());
+        ftpLogin.setEnabled(!httpForFtp.isSelected());
+    }//GEN-LAST:event_httpForFtpActionPerformed
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField dirBox;
+    private javax.swing.JButton dirBrowse;
+    private javax.swing.JButton ftpLogin;
+    private javax.swing.JTextField ftpProxy;
+    private javax.swing.JComboBox<String> ftpProxyMode;
+    private javax.swing.JCheckBox httpForFtp;
+    private javax.swing.JButton httpLogin;
+    private javax.swing.JTextField httpProxy;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JComboBox<String> laf;
+    // End of variables declaration//GEN-END:variables
+}
